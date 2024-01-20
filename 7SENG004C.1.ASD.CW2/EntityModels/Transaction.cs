@@ -28,7 +28,7 @@ public class Transaction : EntityBase
     /// <summary>
     /// Gets or sets the type.
     /// </summary>
-    public int Type { get; set; }
+    public TransactionType Type { get; set; }
 
     /// <summary>
     /// Gets or sets the start date.

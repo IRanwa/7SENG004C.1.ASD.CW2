@@ -17,5 +17,15 @@ public class User : EntityBase
     /// <summary>
     /// Gets or sets the name.
     /// </summary>
-    public string Name { get; set; }
+    public string FullName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the username.
+    /// </summary>
+    public string Username { get; set; }
+
+    /// <summary>
+    /// Gets or sets the password.
+    /// </summary>
+    public string Password { get; set; }
 }
