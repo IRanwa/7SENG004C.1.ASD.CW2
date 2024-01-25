@@ -10,9 +10,11 @@ public class ApplicationService
 {
     private readonly UserService userService;
     private readonly CategoryService categoryService;
+    private readonly TransactionService transactionService;
     public ApplicationService() {
         userService = new UserService();
         categoryService = new CategoryService();
+        transactionService = new TransactionService(categoryService);
     }
 
     public void Initlize()
@@ -83,6 +85,9 @@ public class ApplicationService
                     case 1:
                         ManageCategories(loginUser);
                         break;
+                    case 2:
+                        ManageTransactions(loginUser); 
+                        break;
                     case 5:
                         loginExitStatus = true;
                         break;
@@ -136,5 +141,47 @@ public class ApplicationService
                 Console.WriteLine("Invalid selection. Please try again.");
             }
         } while (!manageCategoriesExitStatus);
+    }
+
+    private void ManageTransactions(User loginUser)
+    {
+        var manageTransactionExitStatus = false;
+        do
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Manage Transactions : Login as {loginUser.FullName}");
+            Console.WriteLine("1) Add Transaction");
+            Console.WriteLine("2) Update Transaction");
+            Console.WriteLine("3) Delete Transaction");
+            Console.WriteLine("4) List Transactions");
+            Console.WriteLine("5) View Transaction");
+            Console.WriteLine("6) Go back");
+            Console.WriteLine();
+            Console.Write("Select a menu option : ");
+
+            try
+            {
+                var selection = Convert.ToInt32(Console.ReadLine());
+                switch (selection)
+                {
+                    case 1:
+                        transactionService.AddTransaction(loginUser);
+                        break;
+                    case 4:
+                        transactionService.ListTransaction(loginUser);
+                        break;
+                    case 5:
+                        transactionService.ViewTransaction(loginUser);
+                        break;
+                    case 6:
+                        manageTransactionExitStatus = true;
+                        break;
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Invalid selection. Please try again.");
+            }
+        } while (!manageTransactionExitStatus);
     }
 }

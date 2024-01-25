@@ -119,7 +119,7 @@ public class CategoryService
         filter.IsActive && filter.Name.ToLower() == categoryName.ToLower());
     }
 
-    private Category GetCategoryById(int categoryId)
+    public Category GetCategoryById(int categoryId)
     {
         return unitOfWork.GetOne<Category>(filter => filter.Id == categoryId && filter.IsActive);
     }
