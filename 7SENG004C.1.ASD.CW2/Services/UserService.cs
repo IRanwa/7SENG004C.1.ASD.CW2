@@ -18,10 +18,11 @@ public class UserService
     /// <summary>
     /// Initializes a new instance of the <see cref="UserService"/> class.
     /// </summary>
-    public UserService()
+    /// <param name="categoryService">The category service.</param>
+    public UserService(CategoryService categoryService)
     {
         unitOfWork = UnitOfWork.Instance;
-        categoryService = new CategoryService();
+        this.categoryService = categoryService;
     }
 
     /// <summary>

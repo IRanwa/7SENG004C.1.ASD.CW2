@@ -35,8 +35,8 @@ public class ApplicationService
     /// </summary>
     public ApplicationService()
     {
-        userService = new UserService();
         categoryService = new CategoryService();
+        userService = new UserService(categoryService);
         budgetService = new BudgetService(categoryService);
         transactionService = new TransactionService(categoryService);
         reportService = new ReportService();
