@@ -1,22 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace _7SENG004C._1.ASD.CW2;
 
-namespace _7SENG004C._1.ASD.CW2;
-
+/// <summary>
+/// The application service.
+/// </summary>
 public class ApplicationService
 {
+    /// <summary>
+    /// The user service.
+    /// </summary>
     private readonly UserService userService;
+
+    /// <summary>
+    /// The category service.
+    /// </summary>
     private readonly CategoryService categoryService;
+
+    /// <summary>
+    /// The transaction service.
+    /// </summary>
     private readonly TransactionService transactionService;
-    public ApplicationService() {
+
+    /// <summary>
+    /// The budget service.
+    /// </summary>
+    private readonly BudgetService budgetService;
+
+    /// <summary>
+    /// The report service.
+    /// </summary>
+    private readonly ReportService reportService;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ApplicationService"/> class.
+    /// </summary>
+    public ApplicationService()
+    {
         userService = new UserService();
         categoryService = new CategoryService();
+        budgetService = new BudgetService(categoryService);
         transactionService = new TransactionService(categoryService);
+        reportService = new ReportService();
     }
 
+    /// <summary>
+    /// Initlizes this instance.
+    /// </summary>
     public void Initlize()
     {
         Console.WriteLine("Welcome to the expense tracker.");
@@ -62,6 +90,10 @@ public class ApplicationService
         Console.WriteLine("Thanks for using the expense tracking application.");
     }
 
+    /// <summary>
+    /// Displays the user features.
+    /// </summary>
+    /// <param name="loginUser">The login user.</param>
     private void DisplayUserFeatures(User loginUser)
     {
         var loginExitStatus = false;
@@ -86,7 +118,13 @@ public class ApplicationService
                         ManageCategories(loginUser);
                         break;
                     case 2:
-                        ManageTransactions(loginUser); 
+                        ManageTransactions(loginUser);
+                        break;
+                    case 3:
+                        ManageBudgets(loginUser);
+                        break;
+                    case 4:
+                        reportService.GetSummaryReport(loginUser);
                         break;
                     case 5:
                         loginExitStatus = true;
@@ -99,6 +137,11 @@ public class ApplicationService
             }
         } while (!loginExitStatus);
     }
+
+    /// <summary>
+    /// Manages the categories.
+    /// </summary>
+    /// <param name="loginUser">The login user.</param>
     private void ManageCategories(User loginUser)
     {
         var manageCategoriesExitStatus = false;
@@ -143,6 +186,10 @@ public class ApplicationService
         } while (!manageCategoriesExitStatus);
     }
 
+    /// <summary>
+    /// Manages the transactions.
+    /// </summary>
+    /// <param name="loginUser">The login user.</param>
     private void ManageTransactions(User loginUser)
     {
         var manageTransactionExitStatus = false;
@@ -167,6 +214,12 @@ public class ApplicationService
                     case 1:
                         transactionService.AddTransaction(loginUser);
                         break;
+                    case 2:
+                        transactionService.UpdateTransaction(loginUser);
+                        break;
+                    case 3:
+                        transactionService.DeleteTransaction(loginUser);
+                        break;
                     case 4:
                         transactionService.ListTransaction(loginUser);
                         break;
@@ -183,5 +236,57 @@ public class ApplicationService
                 Console.WriteLine("Invalid selection. Please try again.");
             }
         } while (!manageTransactionExitStatus);
+    }
+
+    /// <summary>
+    /// Manages the budgets.
+    /// </summary>
+    /// <param name="loginUser">The login user.</param>
+    private void ManageBudgets(User loginUser)
+    {
+        var manageBudgetExitStatus = false;
+        Console.WriteLine();
+        Console.WriteLine("Enter the budget year and month (format is yyyy-MM) : ");
+        var yearAndMonth = Console.ReadLine();
+        var year = Convert.ToInt32(yearAndMonth.Split('-')[0]);
+        var month = Convert.ToInt32(yearAndMonth.Split('-')[1]);
+        do
+        {
+            Console.WriteLine($"Manage Budget for {yearAndMonth} : Login as {loginUser.FullName}");
+            Console.WriteLine("1) Add Budget");
+            Console.WriteLine("2) Update Budget");
+            Console.WriteLine("3) Delete Budget");
+            Console.WriteLine("4) List Budgets");
+            Console.WriteLine("5) Go back");
+            Console.WriteLine();
+            Console.Write("Select a menu option : ");
+
+            try
+            {
+                var selection = Convert.ToInt32(Console.ReadLine());
+                switch (selection)
+                {
+                    case 1:
+                        budgetService.AddBudget(loginUser, year, month);
+                        break;
+                    case 2:
+                        budgetService.UpdateBudget(loginUser, year, month);
+                        break;
+                    case 3:
+                        budgetService.DeleteBudget(loginUser, year, month);
+                        break;
+                    case 4:
+                        budgetService.ListBudgets(loginUser, year, month);
+                        break;
+                    case 5:
+                        manageBudgetExitStatus = true;
+                        break;
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Invalid selection. Please try again.");
+            }
+        } while (!manageBudgetExitStatus);
     }
 }

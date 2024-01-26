@@ -1,24 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿namespace _7SENG004C._1.ASD.CW2;
 
-namespace _7SENG004C._1.ASD.CW2;
-
+/// <summary>
+/// The user service.
+/// </summary>
 public class UserService
 {
+    /// <summary>
+    /// The unit of work
+    /// </summary>
     private readonly UnitOfWork unitOfWork;
+
+    /// <summary>
+    /// The category service
+    /// </summary>
     private readonly CategoryService categoryService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserService"/> class.
+    /// </summary>
     public UserService()
     {
         unitOfWork = UnitOfWork.Instance;
         categoryService = new CategoryService();
     }
 
+    /// <summary>
+    /// Registers the new user.
+    /// </summary>
     public void RegisterNewUser()
     {
         Console.WriteLine();
@@ -53,6 +61,10 @@ public class UserService
         } while (!operationExitStatus);
     }
 
+    /// <summary>
+    /// Logins the user.
+    /// </summary>
+    /// <returns>Returns user.</returns>
     public User LoginUser()
     {
         Console.WriteLine();
@@ -72,6 +84,13 @@ public class UserService
         return user;
     }
 
+    /// <summary>
+    /// Saves the new user.
+    /// </summary>
+    /// <param name="fullName">The full name.</param>
+    /// <param name="userName">Name of the user.</param>
+    /// <param name="password">The password.</param>
+    /// <param name="operationExitStatus">if set to <c>true</c> [operation exit status].</param>
     private void SaveNewUser(string fullName, string userName, string password, ref bool operationExitStatus)
     {
         operationExitStatus = true;
@@ -100,6 +119,11 @@ public class UserService
         Console.WriteLine($"User \"{userName}\" registered successfully.");
     }
 
+    /// <summary>
+    /// Gets the user.
+    /// </summary>
+    /// <param name="userName">Name of the user.</param>
+    /// <returns>Returns user.</returns>
     public User GetUser(string userName)
     {
         return unitOfWork.GetOne<User>(filter => filter.Username == userName);

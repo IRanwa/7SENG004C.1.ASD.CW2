@@ -1,22 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace _7SENG004C._1.ASD.CW2;
 
-namespace _7SENG004C._1.ASD.CW2;
-
+/// <summary>
+/// The transaction service.
+/// </summary>
 public class TransactionService
 {
+    /// <summary>
+    /// The unit of work
+    /// </summary>
     private readonly UnitOfWork unitOfWork;
+
+    /// <summary>
+    /// The category service
+    /// </summary>
     private readonly CategoryService categoryService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TransactionService"/> class.
+    /// </summary>
+    /// <param name="categoryService">The category service.</param>
     public TransactionService(CategoryService categoryService)
     {
         unitOfWork = UnitOfWork.Instance;
         this.categoryService = categoryService;
     }
 
+    /// <summary>
+    /// Adds the transaction.
+    /// </summary>
+    /// <param name="user">The user.</param>
     public void AddTransaction(User user)
     {
         try
@@ -36,21 +48,22 @@ public class TransactionService
             Console.Write("Enter the transaction type id : ");
             var transactionTypeId = Convert.ToInt32(Console.ReadLine());
             var transactionType = (TransactionType)Enum.ToObject(typeof(TransactionType), transactionTypeId);
-            
+
             var startDateTime = DateTime.Now;
             var endDateTime = DateTime.Now;
-            if(transactionType == TransactionType.OneTime)
+            if (transactionType == TransactionType.OneTime)
             {
                 Console.Write("Enter the transaction date (format is yyyy-MM-dd) : ");
                 var date = Convert.ToDateTime(Console.ReadLine());
                 startDateTime = endDateTime = date;
-            }else if (transactionType == TransactionType.RecurringDaily || transactionType == TransactionType.RecurringWeekly)
+            }
+            else if (transactionType == TransactionType.RecurringDaily || transactionType == TransactionType.RecurringWeekly)
             {
                 Console.Write("Enter the transaction start date (format is yyyy-MM-dd) : ");
                 startDateTime = Convert.ToDateTime(Console.ReadLine());
                 Console.Write("Enter the transaction end date (format is yyyy-MM-dd) : ");
                 endDateTime = Convert.ToDateTime(Console.ReadLine());
-                if(endDateTime < startDateTime)
+                if (endDateTime < startDateTime)
                 {
                     Console.WriteLine("Entered date range invalid.");
                     return;
@@ -75,17 +88,80 @@ public class TransactionService
         }
         catch
         {
-            Console.WriteLine("Input value invalid. Please try again.");
+            Console.WriteLine("Transaction save failed.");
         }
     }
 
+    /// <summary>
+    /// Updates the transaction.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    public void UpdateTransaction(User user)
+    {
+        try
+        {
+            ListTransaction(user);
+            Console.Write("Enter the transaction id : ");
+            var transactionId = Guid.Parse(Console.ReadLine());
+            var transaction = GetTransactionById(transactionId);
+            if (transaction == null)
+            {
+                Console.WriteLine("Entered transaction id is invalid.");
+                return;
+            }
+            Console.WriteLine($"Enter the update transaction amount (Current amount is {transaction.Amount}) : ");
+            var amount = Convert.ToDouble(Console.ReadLine());
+            transaction.Amount = amount;
+            unitOfWork.UpdateEntity(transaction);
+            unitOfWork.SaveChanges();
+            Console.WriteLine("Transaction updated successfully.");
+        }
+        catch
+        {
+            Console.WriteLine("Transaction update failed.");
+        }
+    }
+
+    /// <summary>
+    /// Deletes the transaction.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    public void DeleteTransaction(User user)
+    {
+        try
+        {
+            ListTransaction(user);
+            Console.Write("Enter the transaction id : ");
+            var transactionId = Guid.Parse(Console.ReadLine());
+            var transaction = GetTransactionById(transactionId);
+            if (transaction == null)
+            {
+                Console.WriteLine("Entered transaction id is invalid.");
+                return;
+            }
+            transaction.IsActive = false;
+            unitOfWork.UpdateEntity(transaction);
+            unitOfWork.SaveChanges();
+            Console.WriteLine("Transaction removed successfully.");
+        }
+        catch
+        {
+            Console.WriteLine("Transaction remove failed.");
+        }
+
+    }
+
+    /// <summary>
+    /// Views the transaction.
+    /// </summary>
+    /// <param name="user">The user.</param>
     public void ViewTransaction(User user)
     {
         ListTransaction(user);
         Console.Write("Enter the transaction id : ");
         var transactionId = Guid.Parse(Console.ReadLine());
         var transaction = GetTransactionById(transactionId);
-        if(transaction == null)
+        if (transaction == null)
         {
             Console.WriteLine("Entered transaction id is invalid.");
             return;
@@ -100,29 +176,41 @@ public class TransactionService
 
     }
 
+    /// <summary>
+    /// Lists the transaction.
+    /// </summary>
+    /// <param name="user">The user.</param>
     public void ListTransaction(User user)
     {
         Console.Write("Enter transactions from date (format is yyyy-MM-dd) : ");
         var startDateTime = Convert.ToDateTime(Console.ReadLine());
         Console.Write("Enter transactions to date (format is yyyy-MM-dd) : ");
         var endDateTime = Convert.ToDateTime(Console.ReadLine());
-        var transactions = unitOfWork.GetAll<Transaction>(filter => filter.StartDate >= startDateTime && 
+        var transactions = unitOfWork.GetAll<Transaction>(filter => filter.StartDate >= startDateTime &&
             filter.EndDate <= endDateTime && filter.Category.UserId == user.Id);
         Console.WriteLine();
         Console.WriteLine($"Transaction List from {startDateTime.ToShortDateString()} to {endDateTime.ToShortDateString()}");
-        foreach(var transaction in transactions)
+        foreach (var transaction in transactions)
             Console.WriteLine($"Txn Id : {transaction.Id} | Date : {transaction.StartDate.ToShortDateString()} to {transaction.EndDate.ToShortDateString()} " +
                 $"| Amount : {transaction.Amount} | Category : {transaction.Category.Name}");
     }
 
+    /// <summary>
+    /// Displays the transaction types.
+    /// </summary>
     private void DisplayTransactionTypes()
     {
         Console.WriteLine("Transaction Types");
         var transactionTypes = Enum.GetNames(typeof(TransactionType));
-        for(var index = 1; index <= transactionTypes.Length; index++)
-            Console.WriteLine($"{index}) {transactionTypes[index-1]}");
+        for (var index = 1; index <= transactionTypes.Length; index++)
+            Console.WriteLine($"{index}) {transactionTypes[index - 1]}");
     }
 
+    /// <summary>
+    /// Gets the transaction by identifier.
+    /// </summary>
+    /// <param name="transactionId">The transaction identifier.</param>
+    /// <returns>Returns transaction.</returns>
     private Transaction GetTransactionById(Guid transactionId)
     {
         return unitOfWork.GetOne<Transaction>(filter => filter.Id == transactionId);
