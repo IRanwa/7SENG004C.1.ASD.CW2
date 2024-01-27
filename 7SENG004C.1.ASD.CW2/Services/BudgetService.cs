@@ -44,7 +44,7 @@ public class BudgetService
                 Console.WriteLine("Entered category id invalid.");
                 return;
             }
-            var budgetExistForCategory = GetBudgetByCategoryAndYearMonth(categoryId, year, month);
+            var budgetExistForCategory = GetBudgetByCategoryAndYearMonth(categoryId, year, month, user);
             if (budgetExistForCategory != null)
             {
                 Console.WriteLine("Budget already exists for the selected category and the time period.");
@@ -165,9 +165,11 @@ public class BudgetService
     /// <param name="categoryId">The category identifier.</param>
     /// <param name="year">The year.</param>
     /// <param name="month">The month.</param>
+    /// <param name="user">The user.</param>
     /// <returns>Returns budget.</returns>
-    private Budget GetBudgetByCategoryAndYearMonth(int categoryId, int year, int month)
+    private Budget GetBudgetByCategoryAndYearMonth(int categoryId, int year, int month, User user)
     {
-        return unitOfWork.GetOne<Budget>(filter => filter.CategoryId == categoryId && filter.Year == year && filter.Month == month);
+        return unitOfWork.GetOne<Budget>(filter => filter.CategoryId == categoryId && filter.Year == year && filter.Month == month 
+            && filter.Category.UserId == user.Id);
     }
 }
