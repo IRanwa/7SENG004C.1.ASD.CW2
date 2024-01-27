@@ -32,9 +32,9 @@ public class ReportService
             var month = Convert.ToInt32(yearAndMonth.Split('-')[1]);
             var startDate = DateTime.Parse($"{year}-{month}-1");
             var endDate = startDate.AddMonths(1);
-            var userCategories = unitOfWork.GetAll<Category>(filter => filter.IsActive);
-            var transactions = unitOfWork.GetAll<Transaction>(filter => filter.StartDate >= startDate && filter.EndDate <= endDate
-                && filter.Category.UserId == user.Id && filter.IsActive).ToList().GroupBy(filter => filter.Category);
+            var userCategories = unitOfWork.GetAll<Category>(filter => filter.IsActive && filter.UserId == user.Id);
+            var transactions = unitOfWork.GetAll<Transaction>(filter => (filter.StartDate >= startDate || filter.EndDate <= endDate)
+                && filter.Category.UserId == user.Id && filter.IsActive).ToList().GroupBy(filter => filter.CategoryId);
             var budgets = unitOfWork.GetAll<Budget>(filter => filter.Category.UserId == user.Id && filter.Year == year
                 && filter.Month == month && filter.IsActive).ToList().GroupBy(filter => filter.Category);
             Console.WriteLine($"Expense summary for {yearAndMonth}");
@@ -46,9 +46,40 @@ public class ReportService
                 var categoryBudget = budgets.FirstOrDefault(filter => filter.Key.Id == category.Id);
                 if (categoryBudget != null)
                     categoryBudgetAmount = categoryBudget.Sum(filter => filter.Amount);
-                var categoryTxns = transactions.ToList().Where(filter => filter.Key.Id == category.Id);
-                if (categoryTxns.Any())
-                    categoryTxnAmount = transactions.Where(filter => filter.Key.Id == category.Id).Select(filter => filter.Sum(data => data.Amount)).Sum();
+                var categoryTxns = transactions.FirstOrDefault(filter => filter.Key == category.Id);
+                if (categoryTxns != null)
+                {
+                    foreach (var txn in categoryTxns.ToList())
+                    {
+                        if (txn.Type == TransactionType.OneTime)
+                            categoryTxnAmount += txn.Amount;
+                        else if (txn.Type == TransactionType.RecurringDaily)
+                        {
+                            var txnEndDate = txn.EndDate;
+                            var txnStartDate = txn.StartDate;
+                            if(txnEndDate > endDate)
+                                txnEndDate = endDate.AddDays(-1);
+                            if (txnStartDate < startDate)
+                                txnStartDate = startDate;
+                            var days = (txnEndDate - txnStartDate).TotalDays;
+                            categoryTxnAmount += txn.Amount * days;
+                        }
+                        else if (txn.Type == TransactionType.RecurringWeekly)
+                        {
+                            var txnEndDate = txn.EndDate;
+                            var txnStartDate = txn.StartDate;
+                            if (txnEndDate > endDate)
+                                txnEndDate = endDate.AddDays(-1);
+                            if (txnStartDate < startDate)
+                                txnStartDate = startDate;
+                            do
+                            {
+                                categoryTxnAmount += txn.Amount;
+                                txnStartDate = txnStartDate.AddDays(7);
+                            } while (txnStartDate < txnEndDate);
+                         }
+                    }
+                }
                 Console.WriteLine(@$"Category : {category.Name} | Allocated Budget : {categoryBudgetAmount} | Total Txn Amount : {categoryTxnAmount} | Remain Amount : {categoryBudgetAmount - categoryTxnAmount}");
             }
         }

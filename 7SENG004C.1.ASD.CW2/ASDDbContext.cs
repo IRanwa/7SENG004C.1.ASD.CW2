@@ -20,7 +20,7 @@ public class ASDDbContext : DbContext
     /// </summary>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseInMemoryDatabase("ASD");
+        optionsBuilder.UseInMemoryDatabase("AsdDB");
     }
 
     public DbSet<Budget> Budgets { get; set; }

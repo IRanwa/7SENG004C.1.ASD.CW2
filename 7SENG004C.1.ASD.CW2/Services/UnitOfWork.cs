@@ -15,7 +15,7 @@ public class UnitOfWork
     /// <summary>
     /// The database context.
     /// </summary>
-    private ASDDbContext dbContext;
+    private readonly ASDDbContext dbContext;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UnitOfWork"/> class.
